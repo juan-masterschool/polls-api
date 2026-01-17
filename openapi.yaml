@@ -1,0 +1,751 @@
+openapi: 3.0.3
+info:
+  title: Polls API
+  description: |
+    A Flask-based REST API for voting in polls with different access levels.
+    This API supports public polls, protected polls (requires authentication), and admin-only polls.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:5000
+    description: Local development server
+  - url: https://api.example.com
+    description: Production server
+
+tags:
+  - name: API Info
+    description: API information and documentation endpoints
+  - name: Authentication
+    description: User registration and login endpoints
+  - name: Polls
+    description: Poll management endpoints
+  - name: Votes
+    description: Voting endpoints
+  - name: Health
+    description: Health check endpoint
+
+security:
+  - bearerAuth: []
+
+paths:
+  /:
+    get:
+      tags:
+        - API Info
+      summary: Get API information
+      description: Returns API information including available endpoints and documentation links
+      security: []
+      responses:
+        '200':
+          description: API information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiInfo'
+              example:
+                name: "Polls API"
+                version: "1.0.0"
+                description: "A Flask-based REST API for voting in polls with different access levels"
+                documentation:
+                  swagger_ui: "/apidocs"
+                  openapi_spec: "/api/openapi.yaml"
+                endpoints:
+                  health: "/api/health"
+                  auth:
+                    register: "/api/auth/register"
+                    login: "/api/auth/login"
+                  polls:
+                    list: "/api/polls"
+                    get: "/api/polls/{id}"
+                    create: "/api/polls"
+                  votes:
+                    vote: "/api/votes/poll/{poll_id}"
+                    get_votes: "/api/votes/poll/{poll_id}"
+
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the API is running
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+              example:
+                status: healthy
+
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account. The first user registered automatically becomes an admin.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              example1:
+                summary: Register new user
+                value:
+                  username: "john_doe"
+                  password: "securepassword123"
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+              example:
+                message: "User created successfully"
+                user:
+                  id: 1
+                  username: "john_doe"
+                  is_admin: true
+                  created_at: "2026-01-03T17:00:00"
+        '400':
+          description: Bad request (missing fields or username already exists)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingFields:
+                  value:
+                    error: "Username and password are required"
+                usernameExists:
+                  value:
+                    error: "Username already exists"
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login and get JWT token
+      description: Authenticate user and receive a JWT access token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              example1:
+                summary: Login
+                value:
+                  username: "john_doe"
+                  password: "securepassword123"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                access_token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                user:
+                  id: 1
+                  username: "john_doe"
+                  is_admin: true
+                  created_at: "2026-01-03T17:00:00"
+        '400':
+          description: Bad request (missing fields)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Username and password are required"
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Invalid credentials"
+
+  /api/polls:
+    get:
+      tags:
+        - Polls
+      summary: Get all polls
+      description: Retrieve a list of all polls
+      security: []
+      responses:
+        '200':
+          description: List of polls
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Poll'
+              example:
+                - id: 1
+                  question: "What is your favorite programming language?"
+                  is_public: true
+                  requires_admin: false
+                  created_by: 1
+                  created_at: "2026-01-03T17:00:00"
+                  vote_count: 5
+                  options:
+                    - id: 1
+                      poll_id: 1
+                      text: "Python"
+                      created_at: "2026-01-03T17:00:00"
+                    - id: 2
+                      poll_id: 1
+                      text: "JavaScript"
+                      created_at: "2026-01-03T17:00:00"
+                    - id: 3
+                      poll_id: 1
+                      text: "Java"
+                      created_at: "2026-01-03T17:00:00"
+
+    post:
+      tags:
+        - Polls
+      summary: Create a new poll
+      description: Create a new poll with options. Requires authentication.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePollRequest'
+            examples:
+              publicPoll:
+                summary: Public poll
+                value:
+                  question: "What is your favorite programming language?"
+                  options: ["Python", "JavaScript", "Java", "C++"]
+                  is_public: true
+                  requires_admin: false
+              protectedPoll:
+                summary: Protected poll (requires login)
+                value:
+                  question: "What is your favorite framework?"
+                  options: ["React", "Vue", "Angular", "Svelte"]
+                  is_public: false
+                  requires_admin: false
+              adminPoll:
+                summary: Admin-only poll
+                value:
+                  question: "What should be our next security improvement?"
+                  options: ["Rate limiting", "Input validation", "CORS configuration"]
+                  is_public: false
+                  requires_admin: true
+      responses:
+        '201':
+          description: Poll created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Poll'
+        '400':
+          description: Bad request (validation errors)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingQuestion:
+                  value:
+                    error: "Question is required"
+                missingOptions:
+                  value:
+                    error: "At least 2 options are required"
+                duplicateOptions:
+                  value:
+                    error: "Duplicate options are not allowed"
+        '401':
+          description: Unauthorized (authentication required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                msg: "Missing Authorization Header"
+
+  /api/polls/{poll_id}:
+    get:
+      tags:
+        - Polls
+      summary: Get a specific poll
+      description: Retrieve details of a specific poll by ID
+      security: []
+      parameters:
+        - name: poll_id
+          in: path
+          required: true
+          description: The ID of the poll
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Poll details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Poll'
+        '404':
+          description: Poll not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Poll not found"
+
+  /api/votes/poll/{poll_id}:
+    post:
+      tags:
+        - Votes
+      summary: Vote on a poll
+      description: |
+        Vote on a poll by choosing one of its options. 
+        - Public polls: No authentication required
+        - Protected polls: Authentication required
+        - Admin polls: Admin role required
+      security: []
+      parameters:
+        - name: poll_id
+          in: path
+          required: true
+          description: The ID of the poll to vote on
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteRequest'
+            examples:
+              example1:
+                summary: Vote on a poll
+                value:
+                  choice: "Python"
+      responses:
+        '201':
+          description: Vote recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+              example:
+                id: 1
+                poll_id: 1
+                user_id: 1
+                choice: "Python"
+                created_at: "2026-01-03T17:32:31"
+        '400':
+          description: Bad request (validation errors)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                missingChoice:
+                  value:
+                    error: "Choice is required"
+                invalidChoice:
+                  value:
+                    error: "Invalid choice. Must be one of: Python, JavaScript, Java, C++"
+                noOptions:
+                  value:
+                    error: "This poll has no options available"
+        '401':
+          description: Unauthorized (authentication required for protected/admin polls)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                authRequired:
+                  value:
+                    error: "Authentication required for this poll"
+                adminRequired:
+                  value:
+                    error: "Admin access required for this poll"
+        '403':
+          description: Forbidden (admin role required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Admin access required for this poll"
+        '404':
+          description: Poll not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Poll not found"
+
+    get:
+      tags:
+        - Votes
+      summary: Get votes for a poll
+      description: Retrieve all votes and vote counts for a specific poll
+      security: []
+      parameters:
+        - name: poll_id
+          in: path
+          required: true
+          description: The ID of the poll
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Votes and vote counts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VotesResponse'
+              example:
+                poll:
+                  id: 1
+                  question: "What is your favorite programming language?"
+                  is_public: true
+                  requires_admin: false
+                  created_by: 1
+                  created_at: "2026-01-03T17:00:00"
+                  vote_count: 3
+                  options:
+                    - id: 1
+                      poll_id: 1
+                      text: "Python"
+                      created_at: "2026-01-03T17:00:00"
+                    - id: 2
+                      poll_id: 1
+                      text: "JavaScript"
+                      created_at: "2026-01-03T17:00:00"
+                votes:
+                  - id: 1
+                    poll_id: 1
+                    user_id: 1
+                    choice: "Python"
+                    created_at: "2026-01-03T17:32:31"
+                  - id: 2
+                    poll_id: 1
+                    user_id: null
+                    choice: "JavaScript"
+                    created_at: "2026-01-03T17:33:00"
+                  - id: 3
+                    poll_id: 1
+                    user_id: 2
+                    choice: "Python"
+                    created_at: "2026-01-03T17:34:15"
+                vote_counts:
+                  Python: 2
+                  JavaScript: 1
+        '404':
+          description: Poll not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "Poll not found"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/auth/login endpoint
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: Unique username
+          example: "john_doe"
+        password:
+          type: string
+          format: password
+          description: User password
+          example: "securepassword123"
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User created successfully"
+        user:
+          $ref: '#/components/schemas/User'
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: "john_doe"
+        password:
+          type: string
+          format: password
+          example: "securepassword123"
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "john_doe"
+        is_admin:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-03T17:00:00"
+
+    CreatePollRequest:
+      type: object
+      required:
+        - question
+        - options
+      properties:
+        question:
+          type: string
+          description: The poll question
+          maxLength: 500
+          example: "What is your favorite programming language?"
+        options:
+          type: array
+          description: List of poll options (minimum 2, no duplicates)
+          minItems: 2
+          items:
+            type: string
+          example: ["Python", "JavaScript", "Java", "C++"]
+        is_public:
+          type: boolean
+          description: Whether the poll is publicly accessible
+          default: true
+          example: true
+        requires_admin:
+          type: boolean
+          description: Whether the poll requires admin role to vote
+          default: false
+          example: false
+
+    Poll:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        question:
+          type: string
+          example: "What is your favorite programming language?"
+        is_public:
+          type: boolean
+          example: true
+        requires_admin:
+          type: boolean
+          example: false
+        created_by:
+          type: integer
+          nullable: true
+          description: ID of the user who created the poll
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-03T17:00:00"
+        vote_count:
+          type: integer
+          description: Total number of votes
+          example: 5
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+
+    Option:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        poll_id:
+          type: integer
+          example: 1
+        text:
+          type: string
+          example: "Python"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-03T17:00:00"
+
+    VoteRequest:
+      type: object
+      required:
+        - choice
+      properties:
+        choice:
+          type: string
+          description: The option text to vote for (must match one of the poll's options exactly)
+          example: "Python"
+
+    Vote:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        poll_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          nullable: true
+          description: ID of the user who voted (null for anonymous votes on public polls)
+          example: 1
+        choice:
+          type: string
+          example: "Python"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-01-03T17:32:31"
+
+    VotesResponse:
+      type: object
+      properties:
+        poll:
+          $ref: '#/components/schemas/Poll'
+        votes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vote'
+        vote_counts:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Count of votes per choice
+          example:
+            Python: 2
+            JavaScript: 1
+            Java: 0
+            "C++": 0
+
+    ApiInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Polls API"
+        version:
+          type: string
+          example: "1.0.0"
+        description:
+          type: string
+          example: "A Flask-based REST API for voting in polls with different access levels"
+        documentation:
+          type: object
+          properties:
+            swagger_ui:
+              type: string
+              example: "/apidocs"
+            openapi_spec:
+              type: string
+              example: "/api/openapi.yaml"
+        endpoints:
+          type: object
+          properties:
+            health:
+              type: string
+              example: "/api/health"
+            auth:
+              type: object
+              properties:
+                register:
+                  type: string
+                  example: "/api/auth/register"
+                login:
+                  type: string
+                  example: "/api/auth/login"
+            polls:
+              type: object
+              properties:
+                list:
+                  type: string
+                  example: "/api/polls"
+                get:
+                  type: string
+                  example: "/api/polls/{id}"
+                create:
+                  type: string
+                  example: "/api/polls"
+            votes:
+              type: object
+              properties:
+                vote:
+                  type: string
+                  example: "/api/votes/poll/{poll_id}"
+                get_votes:
+                  type: string
+                  example: "/api/votes/poll/{poll_id}"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Invalid choice. Must be one of: Python, JavaScript, Java, C++"
+        msg:
+          type: string
+          description: Alternative error message format (used by Flask-JWT-Extended)
+          example: "Missing Authorization Header"
+

@@ -43,6 +43,26 @@ python app.py
 
 The API will be available at `http://localhost:5000`
 
+## Swagger UI Documentation
+
+The API includes interactive Swagger UI documentation. After starting the server:
+
+1. Open your browser and navigate to: `http://localhost:5000/apidocs`
+
+2. You'll see an interactive API documentation interface where you can:
+   - Browse all available endpoints
+   - See request/response schemas
+   - Test endpoints directly from the browser
+   - Authenticate using the "Authorize" button (enter your JWT token)
+
+3. To use the "Authorize" button:
+   - First, login via `/api/auth/login` to get your JWT token
+   - Click the "Authorize" button at the top of the Swagger UI
+   - Enter: `Bearer <your_jwt_token>` (replace `<your_jwt_token>` with your actual token)
+   - Now you can test protected endpoints directly from Swagger UI
+
+**Alternative**: You can also view the OpenAPI specification directly at `http://localhost:5000/apispec_1.json`
+
 ## API Endpoints
 
 ### Authentication
