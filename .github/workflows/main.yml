@@ -24,6 +24,6 @@ jobs:
 
     - name: Run container
       run: |
-        docker run -d -p 5000:5000 --name polls-api-test polls-api:latest
+        docker run -d -p 5001:5001 --name polls-api-test polls-api:latest
         sleep 5
-        curl <http://localhost:5000/api/health> || exit 1
+        curl <http://localhost:5001/api/health> || exit 1
