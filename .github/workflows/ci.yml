@@ -49,6 +49,20 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      - name: Docker Image For AMD64 and Tag
+        run: |
+          docker build -t polls-api:amd64 --platform linux/amd64 .
+          docker tag polls-api:amd64 ${{ secrets.DOCKERHUB_USERNAME }}/polls-api:amd64
+
+      - name: Push Image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/polls-api:amd64
+
+
+          
+
+        
         
         
 
