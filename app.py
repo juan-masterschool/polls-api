@@ -10,6 +10,7 @@ from routes.votes import votes_bp
 import yaml
 import os
 
+# This function creates my app
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
