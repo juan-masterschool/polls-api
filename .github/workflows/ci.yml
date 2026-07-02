@@ -63,6 +63,12 @@ jobs:
         run: |
           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
 
+      - name: Test API in Cloud
+        run: |
+          sleep 5
+          curl ${{ secrets.RENDER_BASE_URL }}/api/health || exit 1
+
+
 
           
 
