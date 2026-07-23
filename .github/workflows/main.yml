@@ -35,6 +35,7 @@ jobs:
       run: pytest -v
 
     - name: Stop And Remove Containers
+      if: always()
       run: |
         docker stop polls-api-container
         docker rm polls-api-container
