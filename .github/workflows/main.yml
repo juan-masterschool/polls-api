@@ -23,4 +23,26 @@ jobs:
     - name: Run Container
       run: docker run -d -p 5001:5001 --name polls-api-container polls-api
 
+    - name: Set Up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: '3.11'
+
+    - name: Install Requirements
+      run: pip install --no-cache-dir -r requirements.txt
+
+    - name: Run Tests
+      run: pytest -v
+
+    - name: Stop And Remove Containers
+      run: |
+        docker stop polls-api-container
+        docker rm polls-api-container
+
+    
+
+    
+
+    
+
     
