@@ -132,3 +132,4 @@ The application uses SQLite by default. The database file (`polls.db`) will be c
 
 **Note**: The first user registered automatically becomes an admin for demo purposes.
 
+Thank you for using this API!
