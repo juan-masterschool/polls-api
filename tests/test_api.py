@@ -5,7 +5,7 @@ from tests.conftest import BASE_URL
 def test_health_check():
     """Test that the health endpoint returns healthy status"""
     # Act: Make request to health endpoint
-    response = requests.get(f"{BASE_URL}/health")
+    response = requests.get(url=f"{BASE_URL}/health")
 
     # Assert: Check status code
     assert response.status_code == 200
@@ -39,5 +39,4 @@ def test_create_poll(auth_token):
     assert data["is_public"] == True
     assert len(data["options"]) == 3
     assert "id" in data
-
 

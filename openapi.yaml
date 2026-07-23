@@ -48,7 +48,7 @@ paths:
               example:
                 name: "Polls API"
                 version: "1.0.0"
-                description: "A Flask-based REST API for voting in polls with different access levels"
+                description: "July 2026: A Flask-based REST API for voting in polls with different access levels"
                 documentation:
                   swagger_ui: "/apidocs"
                   openapi_spec: "/api/openapi.yaml"
@@ -690,7 +690,7 @@ components:
           example: "1.0.0"
         description:
           type: string
-          example: "A Flask-based REST API for voting in polls with different access levels"
+          example: "July 2026: A Flask-based REST API for voting in polls with different access levels"
         documentation:
           type: object
           properties:

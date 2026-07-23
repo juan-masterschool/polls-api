@@ -83,8 +83,11 @@ def create_app():
     
     return app
 
-# Port 5001 on the Mac
-if __name__ == '__main__':
+def main():
     app = create_app()
     app.run(debug=True, host="0.0.0.0", port=5001)
+
+# Port 5001 on the Mac
+if __name__ == '__main__':
+    main()
 

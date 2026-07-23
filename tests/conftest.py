@@ -22,7 +22,7 @@ def auth_token():
         "username": username,
         "password": "testpass123"
     }
-    requests.post(f"{BASE_URL}/auth/register", json=user_data)
+    requests.post(url=f"{BASE_URL}/auth/register", json=user_data)
 
     # Login and get token
     response = requests.post(f"{BASE_URL}/auth/login", json=user_data)
