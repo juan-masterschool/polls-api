@@ -54,9 +54,9 @@ jobs:
       run: curl ${{secrets.RENDER_HOOK}}
 
     - name: Test API in Cloud
-     run: |
-       sleep 30
-       curl ${{secrets.RENDER_BASE_URL}}/api/health
+      run: |
+        sleep 30
+        curl ${{secrets.RENDER_BASE_URL}}/api/health
       
       
 
