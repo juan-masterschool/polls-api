@@ -22,7 +22,7 @@ jobs:
       run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/polls-api:amd64 --platform linux/amd64 .
 
     - name: Run Container
-      run: docker run -d -p 5001:5001 --name polls-api-container ${{ vars.DOCKERHUB_USERNAME }}/polls-api:amd64
+      run: docker run -d -p 5001:5001 --name polls-api-container ${{ secrets.DOCKERHUB_USERNAME }}/polls-api:amd64
 
     - name: Set Up Python
       uses: actions/setup-python@v7
