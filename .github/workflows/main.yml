@@ -21,3 +21,20 @@ jobs:
 
       - name: Start container
         run: docker run -d -p 5001:5001 --name polls-api-container polls-api
+
+      - name: Set Up Python in Runner
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install requirements
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Run tests
+        run: pytest
+
+      
+
+      
+
+      
