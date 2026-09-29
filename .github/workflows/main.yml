@@ -18,3 +18,6 @@ jobs:
 
       - name: Build image
         run: docker build -t polls-api .
+
+      - name: Start container
+        run: docker run -d -p 5001:5001 --name polls-api-container polls-api
