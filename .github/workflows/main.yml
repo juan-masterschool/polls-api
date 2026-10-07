@@ -20,6 +20,7 @@ jobs:
       - name: Build image
         run: | 
           docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/polls-api:latest --platform linux/amd64 .
+          docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/polls-api:${{ github.sha }} --platform linux/amd64 .
 
       - name: Start container
         run: docker run -d -p 5001:5001 --name polls-api-container ${{ secrets.DOCKER_HUB_USERNAME }}/polls-api:latest
@@ -42,7 +43,9 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Push image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/polls-api:latest
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/polls-api:latest
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/polls-api:${{ github.sha }}
       
 
       
